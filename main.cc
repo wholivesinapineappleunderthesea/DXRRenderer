@@ -5,6 +5,7 @@
 #include "W32Platform.h"
 #include "DXRRenderer.h"
 #include "W32Window.h"
+#include "DXRSingleton.h"
 
 int main(int, const char* const*, const char* const*)
 {
@@ -13,10 +14,13 @@ int main(int, const char* const*, const char* const*)
 
 	if (SUCCEEDED(::CoInitializeEx(nullptr, ::COINIT_MULTITHREADED)))
 	{
+		InitializeSingletonInstances();
+
 		DXRRenderer renderer{};
 		
 		if (renderer.IsValid())
 		{
+
 			std::jthread updateWorker([&renderer](std::stop_token itoken) {
 				auto lastTick = GetPlatformTickValue();
 				while (!itoken.stop_requested())
@@ -25,6 +29,9 @@ int main(int, const char* const*, const char* const*)
 					const auto time = SecondsFromPlatformTickValue(tick - lastTick);
 
 					renderer.Update(time);
+
+					auto cam = CameraManager::GetInstance();
+					cam->Update(time);
 
 					lastTick = tick; 
 				}

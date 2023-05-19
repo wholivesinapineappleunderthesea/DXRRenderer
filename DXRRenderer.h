@@ -2,6 +2,7 @@
 
 #include "W32Platform.h"
 #include "DXRWindowRenderer.h"
+#include "CameraManager.h"
 
 #include <cassert>
 
@@ -107,6 +108,8 @@ struct DXRRenderer
 		{
 			m_renderer->OnResize(w, h);
 		}
+		auto cam = CameraManager::GetInstance();
+		cam->SetAspectRatio((1.f * w) / h);
 	}
 
 	inline auto Render() -> bool

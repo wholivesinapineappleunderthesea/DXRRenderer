@@ -22,9 +22,9 @@
 #endif
 
 #include <array>
-#include <atomic>
 #include <cassert>
 #include <mutex>
+#include <atomic>
 
 #include <glm/glm.hpp>
 
@@ -138,20 +138,9 @@ struct DXRWindowRenderer
 	// Updates everything:
 	auto Update(float dt) -> void;
 
-	// Camera/Viewport:
+	// Viewport:
 	::D3D12_VIEWPORT m_d3dViewport{};
 	::D3D12_RECT m_d3dScissorRect{};
-	glm::mat4 m_viewMatrix{}, m_projectionMatrix{};
-	glm::vec3 m_cameraPosition{};
-	glm::vec3 m_cameraForward{};
-	glm::vec3 m_cameraRight{};
-	glm::vec3 m_cameraUp{};
-	float m_cameraAspectRatio{16.f / 9.f};
-	float m_horizontalFOV{90.f};
-	float m_verticalFOV{m_horizontalFOV / m_cameraAspectRatio};
-	float m_nearPlane{0.01f};
-	float m_farPlane{1000.f};
-	float m_cameraSinTime{};
 
 	// Vertex layout struct:
 	struct Vertex3D
@@ -262,43 +251,39 @@ struct DXRWindowRenderer
 	NTNamespace::UINT m_frameIndex{};
 	NTNamespace::UINT m_previousFrameIndex{};
 
-	// Camera update is done on a different thread, so we need to use atomics,
-	// this struct is for that purpose:
-	// float[4][4] is too big to be lock-free, so one struct saves clockcycles
-	// :)
-	struct ProjAndViewMatrix
+	// Camera constants:
+	struct CameraMatrices
 	{
-		glm::mat4 projectionMatrix;
-		glm::mat4 viewMatrix;
+		glm::mat4 projection;
+		glm::mat4 view;
 	};
-	std::atomic<ProjAndViewMatrix> m_atomicCamera{};
+	std::atomic<CameraMatrices> m_atomicCamera{};;
 
 #ifndef DXRDISABLED2D
 
-	// ALL D2D/D3D11On12 OBJECTS ARE SWAPCHAIN SIZE DEPENDENT!
+// ALL D2D/D3D11On12 OBJECTS ARE SWAPCHAIN SIZE DEPENDENT!
 
-	// D3D11On12:
-	// Device:
-	COMPtr<::ID3D11Device> DXRSWAPCHAINSIZEDEPENDENT m_d3d11Device{};
-	COMPtr<::ID3D11DeviceContext> DXRSWAPCHAINSIZEDEPENDENT
-		m_d3d11DeviceContext{};
-	COMPtr<::ID3D11On12Device> DXRSWAPCHAINSIZEDEPENDENT m_d3d11On12Device{};
+// D3D11On12:
+// Device:
+COMPtr<::ID3D11Device> DXRSWAPCHAINSIZEDEPENDENT m_d3d11Device{};
+COMPtr<::ID3D11DeviceContext> DXRSWAPCHAINSIZEDEPENDENT m_d3d11DeviceContext{};
+COMPtr<::ID3D11On12Device> DXRSWAPCHAINSIZEDEPENDENT m_d3d11On12Device{};
 
-	// D3D11 render target objects:
-	std::array<COMPtr<::ID3D11Resource>, k_NumSwapChainBuffers>
-		DXRSWAPCHAINSIZEDEPENDENT m_d3d11WrappedRenderTargets{};
+// D3D11 render target objects:
+std::array<COMPtr<::ID3D11Resource>, k_NumSwapChainBuffers>
+	DXRSWAPCHAINSIZEDEPENDENT m_d3d11WrappedRenderTargets{};
 
-	// D2D1:
-	// Factory:
-	COMPtr<::ID2D1Factory1> DXRSWAPCHAINSIZEDEPENDENT m_d2dFactory{};
-	// Device:
-	COMPtr<::ID2D1Device> DXRSWAPCHAINSIZEDEPENDENT m_d2dDevice{};
-	COMPtr<::ID2D1DeviceContext> DXRSWAPCHAINSIZEDEPENDENT m_d2dDeviceContext{};
-	// Render target objects:
-	std::array<COMPtr<::ID2D1Bitmap1>, k_NumSwapChainBuffers>
-		DXRSWAPCHAINSIZEDEPENDENT m_d2dRenderTargets{};
-	// Brushes:
-	COMPtr<::ID2D1SolidColorBrush> DXRSWAPCHAINSIZEDEPENDENT
-		m_d2dSolidColorBrush{};
+// D2D1:
+// Factory:
+COMPtr<::ID2D1Factory1> DXRSWAPCHAINSIZEDEPENDENT m_d2dFactory{};
+// Device:
+COMPtr<::ID2D1Device> DXRSWAPCHAINSIZEDEPENDENT m_d2dDevice{};
+COMPtr<::ID2D1DeviceContext> DXRSWAPCHAINSIZEDEPENDENT m_d2dDeviceContext{};
+// Render target objects:
+std::array<COMPtr<::ID2D1Bitmap1>, k_NumSwapChainBuffers>
+	DXRSWAPCHAINSIZEDEPENDENT m_d2dRenderTargets{};
+// Brushes:
+COMPtr<::ID2D1SolidColorBrush> DXRSWAPCHAINSIZEDEPENDENT m_d2dSolidColorBrush{};
 #endif
-};
+}
+;

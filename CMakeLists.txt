@@ -6,7 +6,7 @@ if (POLICY CMP0141)
 endif()
 
 project ("DXRProj")
-add_executable (DXRProj "main.cc" "W32Window.cc" "DXRWindowRendererD2D.cc" "DXRWindowRenderer.cc" "DXRWindowRendererD3D12.cc")
+add_executable (DXRProj "main.cc" "W32Window.cc" "DXRWindowRendererD2D.cc" "DXRWindowRenderer.cc" "DXRWindowRendererD3D12.cc" "CameraManager.cc" "DXRSingletonInstances.cc")
 
 set_property(TARGET DXRProj PROPERTY CXX_STANDARD 23)
 set_property(TARGET DXRProj PROPERTY INTERPROCEDURAL_OPTIMIZATION)

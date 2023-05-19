@@ -875,9 +875,9 @@ auto DXRWindowRenderer::SubmitD3D12() -> void
 	// Set camera constants:
 	GraphicsConstants constants{};
 	const auto matrices = m_atomicCamera.load();
-	memcpy(&constants.projection, &matrices.projectionMatrix[0][0],
+	memcpy(&constants.projection, &matrices.projection[0][0],
 		   sizeof constants.projection);
-	memcpy(&constants.view, &matrices.viewMatrix[0][0], sizeof constants.view);
+	memcpy(&constants.view, &matrices.view[0][0], sizeof constants.view);
 	glm::mat4 model{1.f};
 	memcpy(&constants.model, &model[0][0], sizeof constants.model);
 	m_d3dCommandList->SetGraphicsRoot32BitConstants(0, sizeof constants / 4,

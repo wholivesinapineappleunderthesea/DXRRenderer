@@ -1,4 +1,5 @@
 #include "DXRWindowRenderer.h"
+#include "CameraManager.h"
 #include <d3dcompiler.h>
 
 #ifdef _DEBUG
@@ -6,8 +7,6 @@
 #include <iostream>
 #include <sstream>
 #endif
-
-#include <glm/gtc/matrix_transform.hpp>
 
 DXRWindowRenderer::DXRWindowRenderer(W32Window* window)
 {
@@ -286,8 +285,7 @@ auto DXRWindowRenderer::RenderAll() -> bool
 
 auto DXRWindowRenderer::Update(float dt) -> void
 {
-	m_cameraSinTime += dt;
-
+	(void)dt;
 	m_d3dViewport.Height = static_cast<float>(m_height);
 	m_d3dViewport.Width = static_cast<float>(m_width);
 	m_d3dViewport.MaxDepth = 1.0f;
@@ -300,31 +298,11 @@ auto DXRWindowRenderer::Update(float dt) -> void
 	m_d3dScissorRect.right = static_cast<NTNamespace::LONG>(m_width);
 	m_d3dScissorRect.bottom = static_cast<NTNamespace::LONG>(m_height);
 
-	m_cameraPosition.x = std::sinf(m_cameraSinTime) * 5.f;
-	m_cameraPosition.y = 0.f;
-	m_cameraPosition.z = std::cosf(m_cameraSinTime) * 5.f;
-
-	const auto lookingAt = glm::vec3{};
-
-	m_cameraForward = glm::normalize(lookingAt - m_cameraPosition);
-	m_cameraRight = glm::cross(m_cameraForward, glm::vec3{0.f, 1.f, 0.f});
-	m_cameraUp = glm::cross(m_cameraRight, m_cameraForward);
-
-	m_cameraAspectRatio =
-		static_cast<float>(m_width) / static_cast<float>(m_height);
-	m_verticalFOV = m_horizontalFOV / m_cameraAspectRatio;
-
-	m_projectionMatrix =
-		glm::perspectiveRH_ZO(glm::radians(m_verticalFOV), m_cameraAspectRatio,
-							  m_nearPlane, m_farPlane);
-	m_projectionMatrix = glm::transpose(m_projectionMatrix);
-
-	m_viewMatrix = glm::lookAtRH(
-		m_cameraPosition, m_cameraPosition + m_cameraForward, m_cameraUp);
-	m_viewMatrix = glm::transpose(m_viewMatrix);
-
-	ProjAndViewMatrix p{};
-	p.projectionMatrix = m_projectionMatrix;
-	p.viewMatrix = m_viewMatrix;
-	m_atomicCamera.store(p);
+	const auto cam = CameraManager::GetInstance();
+	CameraMatrices matrices{};
+	matrices.view = cam->GetViewMatrix();
+	matrices.projection = cam->GetProjectionMatrix();
+	m_atomicCamera.store(matrices);
+	
+	
 }
